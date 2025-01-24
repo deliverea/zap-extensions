@@ -646,7 +646,7 @@ public class ExtensionAccessControl extends ExtensionAdaptor
         }
     }
 
-    protected int getScanProgress(int contextId) {
+    public int getScanProgress(int contextId) {
 
         AccessControlScannerThread scannerThread = threadManager.getScannerThread(contextId);
 
@@ -662,7 +662,7 @@ public class ExtensionAccessControl extends ExtensionAdaptor
         }
     }
 
-    protected String getScanStatus(int contextId) {
+    public String getScanStatus(int contextId) {
 
         AccessControlScannerThread scannerThread = threadManager.getScannerThread(contextId);
         String result = null;

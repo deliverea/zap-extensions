@@ -6,6 +6,20 @@ zapAddOn {
     manifest {
         author.set("ZAP Dev Team")
         url.set("https://www.zaproxy.org/docs/desktop/addons/access-control-testing/")
+        extensions {
+            register("org.zaproxy.zap.extension.accessControl.automation.ExtensionAccessControlAutomation") {
+                classnames {
+                    allowed.set(listOf("org.zaproxy.zap.extension.accessControl.automation"))
+                }
+                dependencies {
+                    addOns {
+                        register("automation") {
+                            version.set(">=0.31.0")
+                        }
+                    }
+                }
+            }
+        }
 
         dependencies {
             addOns {
@@ -24,6 +38,7 @@ zapAddOn {
 
 dependencies {
     zapAddOn("commonlib")
+    zapAddOn("automation")
 
     testImplementation(project(":testutils"))
 }
