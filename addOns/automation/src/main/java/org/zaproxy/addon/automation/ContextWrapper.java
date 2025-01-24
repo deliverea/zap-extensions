@@ -48,6 +48,7 @@ import org.zaproxy.zap.authentication.JsonBasedAuthenticationMethodType.JsonBase
 import org.zaproxy.zap.authentication.ManualAuthenticationMethodType.ManualAuthenticationMethod;
 import org.zaproxy.zap.authentication.ScriptBasedAuthenticationMethodType.ScriptBasedAuthenticationMethod;
 import org.zaproxy.zap.authentication.UsernamePasswordAuthenticationCredentials;
+import org.zaproxy.zap.extension.authorization.AuthorizationDetectionMethod;
 import org.zaproxy.zap.extension.users.ExtensionUserManagement;
 import org.zaproxy.zap.model.Context;
 import org.zaproxy.zap.model.StandardParameterParser;
@@ -176,6 +177,9 @@ public class ContextWrapper {
                     break;
                 case "sessionManagement":
                     data.setSessionManagement(new SessionManagementData(value, progress));
+                    break;
+                case "authorizationDetectionMethod":
+                    data.setAuthorizationDetectionMethod(new AuthorizationDetectionMethodData(value, progress));
                     break;
                 case "technology":
                     data.setTechnology(new TechnologyData(value, env, progress));
@@ -328,6 +332,9 @@ public class ContextWrapper {
         if (getData().getAuthentication() != null) {
             getData().getAuthentication().initContextAuthentication(context, progress, env);
         }
+        if (getData().getAuthorizationDetectionMethod() != null) {
+            getData().getAuthorizationDetectionMethod().initContextAuthorizationDetectionMethod(context, progress, env);
+        }
         if (getData().getTechnology() != null) {
             getData().getTechnology().initContextTechnology(context, progress);
         }
@@ -425,6 +432,7 @@ public class ContextWrapper {
         private List<String> excludePaths = new ArrayList<>();
         private AuthenticationData authentication;
         private SessionManagementData sessionManagement;
+        private AuthorizationDetectionMethodData authorizationDetectionMethod;
         private TechnologyData technology;
         private StructureData structure;
         private List<UserData> users = new ArrayList<>();
