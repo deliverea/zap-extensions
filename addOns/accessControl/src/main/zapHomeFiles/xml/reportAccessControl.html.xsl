@@ -53,7 +53,7 @@
 							<th>
 							</th>
 							<xsl:for-each select="users/user">
-								<th colspan="2">
+								<th colspan="3">
 									<xsl:value-of select="@name" />
 								</th>
 							</xsl:for-each>
@@ -71,6 +71,9 @@
 								</th>
 								<th>
 									<xsl:value-of select="//localization/access-control" />
+								</th>
+								<th>
+									Message
 								</th>
 							</xsl:for-each>
 						</tr>
@@ -92,6 +95,15 @@
 									</td>
 									<td class="{@access-control}">
 										<xsl:value-of select="@access-control-localized" />
+									</td>
+									<td>
+										<xsl:value-of select="@access-control-request-header" />
+										<br/>
+										<xsl:value-of select="@access-control-request-body" />
+										<hr/>
+										<xsl:value-of select="@access-control-response-header" />
+										<br/>
+										<xsl:value-of select="@access-control-response-body" />
 									</td>
 								</xsl:for-each>
 							</tr>

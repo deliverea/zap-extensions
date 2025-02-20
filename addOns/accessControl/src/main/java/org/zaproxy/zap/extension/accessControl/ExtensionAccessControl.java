@@ -47,6 +47,7 @@ import org.parosproxy.paros.Constant;
 import org.parosproxy.paros.control.Control;
 import org.parosproxy.paros.control.Control.Mode;
 import org.parosproxy.paros.core.scanner.Alert;
+import org.parosproxy.paros.db.DatabaseException;
 import org.parosproxy.paros.db.RecordContext;
 import org.parosproxy.paros.extension.Extension;
 import org.parosproxy.paros.extension.ExtensionAdaptor;
@@ -55,6 +56,7 @@ import org.parosproxy.paros.extension.ExtensionHookView;
 import org.parosproxy.paros.extension.SessionChangedListener;
 import org.parosproxy.paros.model.Model;
 import org.parosproxy.paros.model.Session;
+import org.parosproxy.paros.network.HttpMalformedHeaderException;
 import org.parosproxy.paros.view.View;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -466,6 +468,26 @@ public class ExtensionAccessControl extends ExtensionAdaptor
                 userResultElement.setAttribute("access-control", result.getResult().name());
                 userResultElement.setAttribute(
                         "access-control-localized", result.getResult().toString());
+                try {
+                    userResultElement.setAttribute(
+                        "access-control-request-header",
+                        result.getHistoryReference().getHttpMessage().getRequestHeader().toString()
+                    );
+                    userResultElement.setAttribute(
+                        "access-control-request-body",
+                        result.getHistoryReference().getHttpMessage().getRequestBody().toString()
+                    );
+                    userResultElement.setAttribute(
+                        "access-control-response-header",
+                        result.getHistoryReference().getHttpMessage().getResponseHeader().toString()
+                    );
+                    userResultElement.setAttribute(
+                        "access-control-response-body",
+                        result.getHistoryReference().getHttpMessage().getResponseBody().toString()
+                    );
+                } catch (HttpMalformedHeaderException | DatabaseException e) {
+                    throw new RuntimeException(e);
+                }
             }
         }
 
