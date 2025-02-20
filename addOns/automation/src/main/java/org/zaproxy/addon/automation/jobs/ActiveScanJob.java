@@ -263,6 +263,8 @@ public class ActiveScanJob extends AutomationJob {
 
         // Wait for the active scan to finish
         ActiveScan scan;
+        int previousScanProgress = 0;
+        long lastProgressOutput = System.currentTimeMillis();
 
         while (true) {
             this.sleep(500);
@@ -274,6 +276,33 @@ public class ActiveScanJob extends AutomationJob {
                 forceStop = true;
                 break;
             }
+
+            var scanProgress = scan.getProgress();
+            var now = System.currentTimeMillis();
+
+            if (scanProgress > previousScanProgress || now - lastProgressOutput > 5000) {
+                progress.info("Active scan progress: " + scanProgress + "%");
+                previousScanProgress = scanProgress;
+
+                scan.getHostProcesses().forEach(
+                    hostProcess -> hostProcess.getRunning().forEach(
+                        running -> {
+                            var requestCount = hostProcess.getPluginRequestCount(running.getId());
+                            progress.info(
+                                    String.format(
+                                            "%s (%s) - %s requests",
+                                            running.getName(),
+                                            running.getId(),
+                                            requestCount
+                                    )
+                            );
+                        }
+                    )
+                );
+
+                lastProgressOutput = now;
+            }
+
         }
         if (forceStop) {
             this.getExtAScan().stopScan(scanId);
