@@ -2,6 +2,8 @@ package org.zaproxy.zap.extension.accessControl.automation;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.parosproxy.paros.Constant;
 import org.parosproxy.paros.control.Control;
 import org.parosproxy.paros.model.Model;
@@ -35,6 +37,8 @@ public class AccessControlJob extends AutomationJob {
     private static final String PARAM_SCAN_AS_UN_AUTH_USER = "scanAsUnAuthUser";
 
     private static final String UN_AUTH_USER_NAME = "unAuthUser";
+
+    private static final Logger LOGGER = LogManager.getLogger(AccessControlJob.class);
 
     private ExtensionAccessControl extAccessControl;
 
@@ -178,8 +182,35 @@ public class AccessControlJob extends AutomationJob {
                     contextWrapper.getUser(userAccessRules.getKey()).getId();
 
             for (var accessRule : userAccessRules.getValue()) {
-                var nodes = targetNodes.stream().filter(sn -> sn.getHistoryReference().getURI().toString().matches(accessRule.getUri())
-                        && accessRule.methods.contains(sn.getHistoryReference().getMethod())).toList();
+                var nodes = targetNodes.stream().filter(sn -> {
+                    boolean matchesUri = sn.getHistoryReference().getURI().toString().matches(accessRule.getUri());
+
+                    if (!matchesUri) {
+                        LOGGER.debug(
+                                "Node {} with URI {} does not match the access rule URI {}",
+                                sn.getNodeName(),
+                                sn.getHistoryReference().getURI().toString(),
+                                accessRule.getUri()
+                        );
+
+                        return false;
+                    }
+
+                    boolean matchesMethod = accessRule.methods.contains(sn.getHistoryReference().getMethod());
+                    if (!matchesMethod) {
+                        LOGGER.debug(
+                                "Node {} with URI {} and method {} does not match the access rule methods {}",
+                                sn.getNodeName(),
+                                sn.getHistoryReference().getURI().toString(),
+                                sn.getHistoryReference().getMethod(),
+                                accessRule.methods
+                        );
+
+                        return false;
+                    }
+
+                    return true;
+                }).toList();
 
                 if (nodes.isEmpty()) {
                     progress.warn(
@@ -193,19 +224,17 @@ public class AccessControlJob extends AutomationJob {
                 }
 
                 nodes.forEach(node -> {
-                    progress.info(
-                            String.format(
-                                    "Adding rule %s in %s for user %s",
-                                    accessRule.getAccess(),
-                                    node.getNodeName(),
-                                    userId
-                            )
-                    );
-
                     accessRulesManager.addRule(
                             userId,
                             new SiteTreeNode(node.getNodeName(), node.getHistoryReference().getURI()),
                             org.zaproxy.zap.extension.accessControl.AccessRule.valueOf(accessRule.getAccess())
+                    );
+
+                    LOGGER.debug(
+                            "Added rule {} for URI {} and user {}",
+                            accessRule.getAccess(),
+                            node.getHistoryReference().getURI().toString(),
+                            contextWrapper.getUser(userAccessRules.getKey()).getName()
                     );
                 });
             }
